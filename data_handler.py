@@ -4,32 +4,24 @@ __email__ = "otto.vanderhimst@ru.nl"
 
 import numpy as np
 import matplotlib.pyplot as plt
-import random
-import pickle
-from PIL import Image
-import time
 import os
-import shutil
-import traceback
-import sys
 
-import util
-from util import dump, load, get_sinewave, get_firing_probability
+from util import dump, load
 
 class DataHandler():
     
     def __init__(self, P):
         
-        self.pd_data = P.pd_data                   # Path to data directory
-        self.pf_mnist = P.pf_mnist                 # Path to MNIST file
+        self.pd_data = P.pd_data                               # Path to data directory
+        self.pf_mnist = P.pf_mnist                             # Path to MNIST file
         self.pdt_mnist_spikes_train = P.pdt_mnist_spikes_train # Path template to MNIST spikes directory
-        self.pdt_mnist_spikes_test = P.pdt_mnist_spikes_test # Path template to MNIST spikes directory
-        self.nft_mnist_spikes = P.nft_mnist_spikes # Filename template of MNIST spike slice
+        self.pdt_mnist_spikes_test = P.pdt_mnist_spikes_test   # Path template to MNIST spikes directory
+        self.nft_mnist_spikes = P.nft_mnist_spikes             # Filename template of MNIST spike slice
         self.tag_mnist_normal = P.tag_mnist_normal
         self.tag_mnist_shuffled = P.tag_mnist_shuffled
         self.tag_mnist_noisy = P.tag_mnist_noisy
         
-        self.hertz_i = P.hertz_i     # The hertz of each spike train
+        self.hertz_i = P.hertz_i # The hertz of each spike train
         self.ms = P.ms           # The duration in miliseconds of each spike train
         self.s_slice = P.s_slice # The size of each slice of data
         

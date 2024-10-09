@@ -2,19 +2,6 @@ __author__ = "Otto van der Himst"
 __version__ = "1.0"
 __email__ = "otto.vanderhimst@ru.nl"
 
-import sys
-import util
-from util import Parameters, save_img, load
-from data_handler import DataHandler
-from net_single import NetworkSingle
-from net_hierarchical import NetworkHierarchical
-from net_integration import NetworkIntegration
-import numpy as np
-import traceback
-import gc
-import time
-import multiprocessing
-import os
 
 def get_params_00(segment, n_experiments=10, seed_base=2022): # experiment 1
     

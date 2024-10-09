@@ -3,17 +3,10 @@ __version__ = "1.0"
 __email__ = "otto.vanderhimst@ru.nl"
 
 import numpy as np
-import matplotlib.pyplot as plt
-import random
-import pickle
-from PIL import Image
 import time
-import os
-import shutil
-import traceback
 import sys
 import util
-from util import save_img, squeeze_all, is_none
+from util import save_img, is_none
 import gc
 from network import Network, WTALayer
 
@@ -138,6 +131,9 @@ class NetworkSingle(Network):
         
         # The number of times each neuron spiked for each label
         neuron_label_counts = np.zeros((self.K, 10), dtype=np.uint32)
+
+        # For each image the number of times each neuron spiked
+        neuron_image_counts = np.zeros((util.SHAPE_MNIST_TEST[0], self.K_o))
         
         time_start = time.time()
         # Iterate over the spike data in slices of size <data_handler.s_slice>

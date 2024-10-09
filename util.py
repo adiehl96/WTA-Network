@@ -8,7 +8,6 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import sys
 import os
-import time
 import pandas as pd
 
 # Constants
@@ -203,7 +202,7 @@ class Parameters():
             "tag_mnist_normal":"-normal",
             "tag_mnist_shuffled":"-shuffled",
             "tag_mnist_noisy":"_noisy-{}",
-            "tag_mnist":None,
+            "tag_mnist":"-normal",
             
             "pd_results":"./[01LF] results/",
             "nd_weight_ims":"weight-images/",

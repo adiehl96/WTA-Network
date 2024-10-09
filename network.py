@@ -5,16 +5,9 @@ __email__ = "otto.vanderhimst@ru.nl"
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-import pickle
-from PIL import Image
-import time
 import os
-import shutil
-import traceback
-import sys
 import util
-from util import save_img, squeeze_all, get_sinewave, get_firing_probability, is_none, normalize
-import gc
+from util import squeeze_all, is_none, normalize
 
 class Inhibitor():
     
