@@ -11,8 +11,8 @@ import os
 import pandas as pd
 
 # Constants
-SHAPE_MNIST_TRAIN = (60000, 28, 28)
-SHAPE_MNIST_TEST  = (10000, 28, 28)
+SHAPE_MNIST_TRAIN = (10000, 28, 28)
+SHAPE_MNIST_TEST  = (1000, 28, 28)
 
 # Names of inner folders of integration run, for network a and b respectively
 ND_NET_A = "net_a/"
@@ -20,7 +20,7 @@ ND_NET_B = "net_b/"
 
 def calc_entropy(x):
     if np.any(x<0):
-        print("Error when comptuing entropy: array should not contain negative values!")
+        print("Error when computing entropy: array should not contain negative values!")
         sys.exit()
     if x.sum() == 0:
         x += 1
@@ -52,14 +52,6 @@ def squeeze_all(array):
     np.squeeze(array, indices_empty)    
     return np.squeeze(array, indices_empty)
    
-# =============================================================================
-# def get_sinewave(amplitude, frequency, phase, delay, ms):
-#     """ Get a sine wave that lasts for a given amount (<ms>) time. """
-#     x = np.linspace(0, ms, ms)
-#     w = (2*np.pi)/ms * frequency/(1000/ms)
-#     wave = amplitude * np.sin(w*x + phase - delay) + 100
-#     return x, wave
-# =============================================================================
    
 def get_sinewave(amplitude, frequency, phase, delay, ms):
     """ Get a sine wave that lasts for a given amount (<ms>) time. """
@@ -96,7 +88,6 @@ def normalize(cm, axis):
 def plot_confusion_matrix(cm, xticks, yticks, title, xlabel, ylabel, vmin=None, vmax=None, figsize=(10,7)):
     try:
         import seaborn as sn
-        from matplotlib.colors import LinearSegmentedColormap
     except:
         return
     df_cm = pd.DataFrame(cm, index = yticks, columns = xticks)
@@ -113,7 +104,6 @@ def plot_confusion_matrix(cm, xticks, yticks, title, xlabel, ylabel, vmin=None, 
 def save_confusion_matrix(pd_figure, cm, xticks, yticks, title, xlabel, ylabel, vmin=None, vmax=None, figsize=(10,7)):
     try:
         import seaborn as sn
-        from matplotlib.colors import LinearSegmentedColormap
     except:
         return
     df_cm = pd.DataFrame(cm, index = yticks, columns = xticks)
@@ -294,7 +284,7 @@ class Parameters():
         
         # Parameters for the spike data
         self.hertz_i = float(params_custom['hertz_i']) # The firing frequency of each input spike train
-        self.ms    = int(params_custom['ms']) # The duration in miliseconds of each input spike train
+        self.ms    = int(params_custom['ms']) # The duration in milliseconds of each input spike train
         self.s_slice = int(params_custom['s_slice']) # The size of each slice of data
         
         # The combined firing frequency of neurons in the output layer
@@ -493,265 +483,6 @@ class Parameters():
         
         print(self)
 
-    def set_hierarchical(self, argv):
-        
-        """ Set the parameters corresponding to a hierarchical WTA network. """
-        
-        print("\n--------- Setting Parameters Hierarchical Network ---------")
-        
-        # Set the parameters that are common to most or all WTA networks
-        self.set_common_default()
-        
-        # The default parameters
-        self.params_default.update({
-        
-            "K_h":38, "K_o":99,
-            "learn_h":True, "learn_o":True,
-            
-            "pf_pretrained_weights_ih":None, 
-            
-            "pf_pretrained_weights_ho":None,
-            
-            "print_results_h":True, "print_results_o":True,
-            "plot_weight_ims_h":True, "plot_weight_ims_o":True,
-            
-            "ndt_run":"run-hierarchical_{:04d}/",
-
-            "save_weight_ims_h":True, 
-            "nd_weight_ims_h":"hidden/",
-            "nft_weight_ims_h":"weights-h_t{:05d}_{}-{}_{:03d}.jpg",
-            "save_weight_ims_o":True,
-            "nd_weight_ims_o":"output/",
-            "nft_weight_ims_o":"weights-o_t{:05d}_{:03d}.jpg",
-            
-            
-            "save_weights_h":False,
-            "nd_weights_h":"hidden/",
-            "nft_weights_h":"weights-h_t{:05d}_{}-{}.npy",
-            "save_weights_o":False, 
-            "nd_weights_o":"output/",
-            "nft_weights_o":"weights-o_t{:05d}.npy",
-            
-            "inh_start_h":None,
-            "inh_change_h":0.01,
-            "inh_ratio_h":10,
-            
-            "e_min_h":None,
-            
-            "hertz_h":10/150*1000,
-            })
-     
-        # Adjust the custom parameters according to the arguments in argv
-        params_custom = self.customize_parameters(self.params_default.copy(), argv)
-        
-        # Customize the common parameters
-        self.set_common_custom(params_custom, argv)
-        
-        # Load parameters if a valid path is given
-        pf_pre_parameters = self.pf_pre_parameters
-        if pf_pre_parameters != None and pf_pre_parameters != "None":
-            P_loaded = load(pf_pre_parameters)
-            if self.load_essential_params_only: # Load only some essential parameters
-                params_custom['tag_mnist'] = P_loaded.tag_mnist # *** !!!! $$$$$$$$$$
-                params_custom['K_h'] = P_loaded.K_h
-                params_custom['K_o'] = P_loaded.K_o
-                params_custom['inh_start_h'] = P_loaded.inh_start_h
-                params_custom['inh_change_h'] = P_loaded.inh_change_h
-                params_custom['inh_ratio_h'] = P_loaded.inh_ratio_h
-                params_custom['e_min_h'] = P_loaded.e_min_h
-                message = (f" tag_mnist={params_custom['tag_mnist']}\n"+
-                           f" K={params_custom['K_h']},  K={params_custom['K_o']}\n"+
-                           f" inh_start_h={params_custom['inh_start_h']}, inh_change_h={params_custom['inh_change_h']},"+
-                           f" inh_change_h={params_custom['inh_change_h']}, inh_ratio_h={params_custom['inh_ratio_h']},"+
-                           f" inh_ratio_h={params_custom['inh_ratio_h']}\n"+
-                           f" e_min_o={params_custom['e_min_o']}\n")
-                self.params_custom_str += message
-            else: # Load all parameters
-                self.load_all(params_custom, P_loaded, pf_pre_parameters)
-                
-        # Designate which MNIST to use
-        self.tag_mnist = params_custom['tag_mnist'] # The tag to be used for a given run
-        
-        # Set the number of neurons per WTA circuit
-        self.K_h = int(params_custom['K_h']) # The number of neurons per hidden circuit
-        self.K_o = int(params_custom['K_o']) # The number of neurons for the output circuit
-    
-        # Determine which parts of the network should learn (i.e. update the weights)
-        self.learn_h = self.interpret_boolean(params_custom['learn_h'])
-        self.learn_o = self.interpret_boolean(params_custom['learn_o'])
-        
-        self.inh_start_h = None if is_none(params_custom['inh_start_h']) else float(params_custom['inh_start_h'])
-        self.inh_change_h  = float(params_custom['inh_change_h'])
-        self.inh_ratio_h  = float(params_custom['inh_ratio_h'])
-        
-        self.e_min_h = None if is_none(params_custom['e_min_h']) else float(params_custom['e_min_h'])
-        
-        self.hertz_h = float(params_custom['hertz_h']) # The target firing frequency of the hidden layer
-        
-        # The paths to previously trained weights
-        self.pf_pretrained_weights_ih = params_custom['pf_pretrained_weights_ih']
-        self.pf_pretrained_weights_ho = params_custom['pf_pretrained_weights_ho']
-        
-        # Whether certain results should be printed
-        self.print_results_h = self.interpret_boolean(params_custom['print_results_h'])
-        self.print_results_o = self.interpret_boolean(params_custom['print_results_o'])
-        
-        # Whether network weights (converted to pixels) are plotted
-        self.plot_weight_ims_h = self.interpret_boolean(params_custom['plot_weight_ims_h'])
-        self.plot_weight_ims_o = self.interpret_boolean(params_custom['plot_weight_ims_o'])
-        
-        # Whether or not pixel representation of the weight and/or the weights themselves should be stored
-        self.save_weight_ims_h = self.interpret_boolean(params_custom['save_weight_ims_h'])
-        self.save_weight_ims_o = self.interpret_boolean(params_custom['save_weight_ims_o'])
-        self.save_weights_h = self.interpret_boolean(params_custom['save_weights_h'])
-        self.save_weights_o = self.interpret_boolean(params_custom['save_weights_o'])
-        self.pd_weight_ims_h = self.nft_weight_ims_h = self.pd_weight_ims_o = self.nft_weight_ims_o = "NONE"
-        self.pd_weights_h = self.pd_weights_o = self.nft_weights_h = self.nft_weights_o = "NONE"
-        if self.save_weight_ims_h or self.save_weight_ims_o or self.save_weights_h or self.save_weights_o:
-            
-            # Create a directory for this run
-            self.pd_results = params_custom['pd_results']
-            ndt_run = params_custom['ndt_run']
-            if ndt_run[-len(ND_NET_A):] == ND_NET_A or ndt_run[-len(ND_NET_B):] == ND_NET_B:
-                self.pd_run = ndt_run
-            else:
-                self.run_id = len([name for name in os.listdir(self.pd_results) if os.path.isdir(self.pd_results+name) and name[:-5]==ndt_run[:-8]])
-                self.pd_run = self.pd_results + ndt_run.format(self.run_id)
-            os.mkdir(self.pd_run)
-            print("Created directory for storing data from this run: <{}>".format(self.pd_run))
-            
-            # # Create the directories where pixel representations of the weights will be stored 
-            if self.save_weight_ims_h or self.save_weight_ims_o:
-                pd_weight_ims = self.pd_run + params_custom['nd_weight_ims']
-                os.mkdir(pd_weight_ims) # Create the upper directory
-                if self.save_weight_ims_h: # Create a directory for images of the hidden weights
-                    self.pd_weight_ims_h = pd_weight_ims + params_custom['nd_weight_ims_h']
-                    os.mkdir(self.pd_weight_ims_h)
-                    self.nft_weight_ims_h = params_custom['nft_weight_ims_h']
-                if self.save_weight_ims_o:  # Create a directory for images of the output weights
-                    self.pd_weight_ims_o = pd_weight_ims + params_custom['nd_weight_ims_o']
-                    os.mkdir(self.pd_weight_ims_o)
-                    self.nft_weight_ims_o = params_custom['nft_weight_ims_o']
-            
-            # Create the directory where the weights will be stored
-            if self.save_weights_h or self.save_weights_o:
-                pd_weights = self.pd_run + params_custom['nd_weights']
-                os.mkdir(pd_weights) # Create the upper directory for the weights
-                if self.save_weights_h: # Create a directory for the hidden weights    
-                    self.pd_weights_h = pd_weights + params_custom['nd_weights_h']
-                    os.mkdir(self.pd_weights_h)
-                    self.nft_weights_h = params_custom['nft_weights_h']
-                if self.save_weights_o: # Create a directory for the output weights
-                    self.pd_weights_o = pd_weights + params_custom['nd_weights_o']
-                    os.mkdir(self.pd_weights_o)
-                    self.nft_weights_o = params_custom['nft_weights_o']
-                
-            self.pd_test_results = self.pd_run + params_custom['nd_test_results']
-            
-            # Write the parameters to a text file and store it            
-            with open(self.pd_run+self.nf_parameters_txt, 'w') as f:
-                f.write(str(self))
-                
-            # Store the parameters as a .pkl file
-            dump(self, self.pd_run+self.nf_parameters_pkl)
-        
-        print(self)
-
-    def set_integration(self, argv):
-        
-        """ Set the parameters corresponding to an integration WTA network. """
-        
-        print("\n---------- Setting Parameters Integration Network ----------")
-    
-        # Set the parameters that are common to most or all WTA networks
-        self.set_common_default()
-        
-        # The default parameters
-        self.params_default.update({            
-            "K":98,
-            "learn":True,
-            
-            "pf_pretrained_weights":None, 
-            
-            "print_results":True,
-            "plot_weight_ims":True,
-            
-            "ndt_run":"run-integration_{:04d}/",
-            
-            "save_weight_ims":True,
-            "nft_weight_ims":"weights_t{:05d}_{:03d}.jpg",
-            
-            "save_weights":False,
-            "nft_weights":"weights_t{:05d}.npy",
-            })
-        
-        # Adjust the custom parameters according to the arguments in argv
-        params_custom = self.customize_parameters(self.params_default.copy(), argv)
-        
-        # Customize the common parameters
-        self.set_common_custom(params_custom, argv)
-        
-        # Load parameters if a valid path is given
-        pf_pre_parameters = self.pf_pre_parameters
-        if pf_pre_parameters != None and pf_pre_parameters != "None":
-            P_loaded = load(pf_pre_parameters)
-            if self.load_essential_params_only: # Load only some essential parameters
-                params_custom['K'] = P_loaded.K
-                message = f" K={params_custom['K']}\n"
-                self.params_custom_str += message
-            else: # Load all parameters
-                self.load_all(params_custom, P_loaded, pf_pre_parameters)
-        
-        # Set the number of neurons per WTA circuit
-        self.K = int(params_custom['K']) # The number of final neurons
-        
-        # Enable or disabling learning for each layer
-        self.learn = self.interpret_boolean(params_custom['learn'])
-        
-        # The path to previously trained weights
-        self.pf_pretrained_weights = params_custom['pf_pretrained_weights']
-        
-        # Whether certain results should be printed
-        self.print_results = self.interpret_boolean(params_custom['print_results'])
-        
-        # Whether network weights (converted to pixels) are plotted
-        self.plot_weight_ims = self.interpret_boolean(params_custom['plot_weight_ims'])
-        
-        # Whether or not pixel representation of the weight and/or the weights themselves should be stored
-        self.save_weight_ims = self.interpret_boolean(params_custom['save_weight_ims'])
-        self.save_weights = self.interpret_boolean(params_custom['save_weights'])
-        self.pd_weight_ims = self.nft_weight_ims = self.pd_weights = self.nft_weights = "None"
-        if self.save_weight_ims or self.save_weights:
-            
-            # Create a directory for this run
-            ndt_run = params_custom['ndt_run']
-            self.run_id = len([name for name in os.listdir(self.pd_results) if os.path.isdir(self.pd_results+name) and name[:-5]==ndt_run[:-8]])
-            self.pd_run = self.pd_results + ndt_run.format(self.run_id)
-            os.mkdir(self.pd_run)
-            print("Created directory for storing data from this run: <{}>".format(self.pd_run))
-            
-            # Create the directory where pixel representations of the weights will be stored
-            if self.save_weight_ims:
-                self.pd_weight_ims = self.pd_run + params_custom['nd_weight_ims']
-                os.mkdir(self.pd_weight_ims)
-                self.nft_weight_ims = params_custom['nft_weight_ims']
-            
-            # Create the directory where the weights will be stored
-            if self.save_weights:
-                self.pd_weights = self.pd_run + params_custom['nd_weights']
-                os.mkdir(self.pd_weights)
-                self.nft_weights = params_custom['nft_weights']
-                
-            # Write the parameters to a text file and store it            
-            with open(self.pd_run+'parameters.txt', 'w') as f:
-                f.write(str(self))
-            
-            self.pd_test_results = self.pd_run + params_custom['nd_test_results']
-                
-            # Store the parameters as a .pkl file
-            dump(self, self.pd_run+self.nf_parameters_pkl)
-        
-        print(self)
 
     def __repr__(self):
         string = ("\nDefault parameters:\n{}\n".format(str(self.params_default)))

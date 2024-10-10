@@ -48,7 +48,7 @@ class NetworkSingle(Network):
             sys.exit()
         if str(weights) != "nopath":
             self.weights = weights
-            print(f"Succesfully loaded input-output weights from <{pf_pretrained_weights}>.")
+            print(f"Successfully loaded input-output weights from <{pf_pretrained_weights}>.")
             return True
         return False
     
@@ -68,15 +68,15 @@ class NetworkSingle(Network):
     
     def propagate(self, spike_times, t, learn=True):
         """ 
-        Propogate activity through the network for a single timestep according
+        Propagate activity through the network for a single timestep according
         to the given spike times.
         """
         
-        # Propogate through the input layer
+        # Propagate through the input layer
         self.propagate_input(spike_times, t) 
         
-        # Propogate through the output layer
-        k_o = self.propagate_layer(self.layer_i, self.layer_o, None,
+        # Propagate through the output layer
+        self.propagate_layer(self.layer_i, self.layer_o, None,
                                    self.weights, None, 
                              self.n_spikes_since_reset, self.K, 
                              t, self.hertz_o, learn=learn)
@@ -110,7 +110,7 @@ class NetworkSingle(Network):
                 self.index_im_all = index_im_all # $$$
                 self.print_interval = P.print_interval # $$$
                 
-                # Propogate through the network according to the current timestep and given spike times
+                # Propagate through the network according to the current timestep and given spike times
                 for t in range(data_handler.ms):
                     self.propagate(spike_times, t, learn=self.learn)
                 self.reset() # Reset the network between images
@@ -151,7 +151,7 @@ class NetworkSingle(Network):
                 # Retrieve the label of the current image
                 label = labels[index_im_all]
             
-                # Propogate through the network according to the current timestep and given spike times
+                # Propagate through the network according to the current timestep and given spike times
                 for t in range(data_handler.ms):
                     self.propagate(spike_times, t, learn=self.learn)
                 self.reset() # Reset the network between images
